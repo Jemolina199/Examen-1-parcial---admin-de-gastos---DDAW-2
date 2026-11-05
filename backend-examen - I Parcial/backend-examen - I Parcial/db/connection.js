@@ -1,19 +1,10 @@
-const {Sequelize} = require('sequelize')
-
-const sequelize= new Sequelize(
-     'exameniparcial',
-     'root',
-     'root1234',
-    {
-        host:  '127.0.0.1',
-        port: 3306,
-        dialect: 'mysql'
-    }
-)
-
-
-sequelize.authenticate()
-    .then(()=> console.log("Conexion se realizo exitosamente"))
-    .catch(err=> console.log("Ocurrio un error con la conexion" + err))
-
-module.exports= sequelize
+const path = require('node:path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const { Sequelize } = require('sequelize');
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'gastos_demo',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || '',
+  { host: process.env.DB_HOST || 'localhost', port: Number(process.env.DB_PORT || 3306), dialect: 'mysql', logging: false }
+);
+module.exports = sequelize;

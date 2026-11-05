@@ -22,6 +22,7 @@ export default function Login() {
     return (
         <div style={{padding: '20px', maxWidth: '300px', margin: 'auto'}}>
             <h1>Inicio de Sesion</h1>
+            <p>Demo academica: admin / admin123. Esta pantalla no implementa autenticacion segura.</p>
             <input placeholder="Usuario" style={{border: '1px solid gray', padding: '8px', width: '100%', marginBottom: '8px'}} onChange={e => setUser(e.target.value)} />
             <input type="password" placeholder="Clave" style={{border: '1px solid gray', padding: '8px', width: '100%', marginBottom: '8px'}} onChange={e => setClave(e.target.value)} />
             {error && <p style={{color: 'red'}}>{error}</p>}

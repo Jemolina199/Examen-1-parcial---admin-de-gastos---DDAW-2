@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Expense Tracker
 
-## Getting Started
+Academic full-stack project combining a React/Next.js interface with an Express API and a MySQL database.
 
-First, run the development server:
+## Implemented features
+- Enter a monthly budget and see spending totals and threshold warnings.
+- Add expenses with a category, amount, and date; retrieve saved expenses from MySQL.
+- Use React Context to share budget and expense state.
+- Express endpoints for listing, creating, updating, and deleting expenses.
+- Form validation, loading/error states, typed context, and configurable API/database settings.
 
+## Run locally
+Requirements: Node.js 20.9+, npm, MySQL, and two terminals.
+
+1. Create the demo database with the backend `schema.sql` file:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+mysql -u root -p < "backend-examen - I Parcial/backend-examen - I Parcial/schema.sql"
 ```
+2. Start the backend:
+```bash
+cd "backend-examen - I Parcial/backend-examen - I Parcial"
+npm ci
+cp .env.example .env
+# Edit .env with your local MySQL connection details.
+npm start
+```
+3. In a second terminal, from the repository root:
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+Open http://localhost:3000. The default API URL is http://localhost:5000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Demo walkthrough
+Enter with the displayed demo credentials, set a positive budget, add a dated expense, and compare the total against the budget. Reload the expense page to retrieve records from the database.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
+From the frontend root: `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+From the backend directory: `npm test`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/gasto` | List expenses |
+| POST | `/gasto` | Create an expense |
+| PUT | `/gasto/:idgasto` | Replace an expense's category, amount, and date |
+| DELETE | `/gasto/:idgasto` | Delete an expense |
 
-## Learn More
+POST and PUT accept JSON such as `{"categoria":"Comida","monto":"120.50","fecha":"2026-11-05"}`.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scope and limitations
+This is a learning project, not a production finance service. The login screen is a browser-side demonstration, not secure authentication. The API has no authentication or user isolation. Run it locally with synthetic data only. Budget and demo login state remain in memory; expense records persist in MySQL. The interface currently exposes listing and creation; update/delete are API capabilities.

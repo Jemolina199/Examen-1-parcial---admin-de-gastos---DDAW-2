@@ -1,83 +1,44 @@
-const express = require('express')
-const { where } = require('sequelize')
-const Gasto = require('./Modelos/Gasto')
-
-var cors = require('cors')
-
-const app= express()
-
-app.use(express.json())
-app.use(cors())
-
-app.get('/gasto', async (req,res) =>{
-
-    try {
-        
-        const gastos = await Gasto.findAll();
-
-        res.status(200).json(gastos);
-
-    } catch (error) {
-        res.status(500).json({error: 'Ocurrio un error'});
-    }
-})
-
-
-app.post('/gasto', async (req,res) =>{
-
-    try {
-        
-
-        console.log(req.body)
-        const gasto = await Gasto.create(req.body)
-        
-
-        res.status(200).json({'mesnaje': 'gasto agregado correctamente'});
-
-    } catch (error) {
-        res.status(500).json({error: 'Ocurrio un error' + error});
-    }
-})
-
-app.put('/gasto/:idgasto', async (req,res) =>{
-
-    try {
-        
-
-        const [updated] = await Gasto.update(req.body,{
-            where: {idgasto: req.params.idgasto}
-        })
-
-        if(updated){
-            res.status(200).json({'mesnaje': 'gasto actualizado correctamente'});
-        }
-        else{
-            res.status(400).json({'mesnaje': 'No se actualizo'});
-        }
-       
-
-    } catch (error) {
-        res.status(500).json({error: 'Ocurrio un error' + error});
-    }
-})
-
-
-
-app.delete('/gasto/:idgasto', async (req, res) => {
-    try {
-        const deleted = await Gasto.destroy({
-            where: { idgasto: req.params.idgasto },
-        });
-        if (deleted) {
-            res.status(200).send({'mesnaje': 'gasto eliminado correctamente'});
-        } else {
-            res.status(404).json({ error: 'gasto no encontrado' });
-        }
-    } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar gasto' +error});
-    }
+const express = require('express');
+const cors = require('cors');
+const sequelize = require('./db/connection');
+const Gasto = require('./Modelos/Gasto');
+const { parseGasto } = require('./validation');
+const app = express();
+app.use(express.json());
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000' }));
+function onError(res) { return res.status(500).json({ error: 'No se pudo completar la operacion' }); }
+app.get('/gasto', async (_req, res) => {
+  try { res.json(await Gasto.findAll({ order: [['fecha', 'DESC'], ['idgasto', 'DESC']] })); }
+  catch { onError(res); }
 });
-
-app.listen(5000,()=>{
-    console.log('aplcacion ejecutando en puerto 5000')
-})
+app.post('/gasto', async (req, res) => {
+  const data = parseGasto(req.body);
+  if (!data) return res.status(400).json({ error: 'Categoria, monto positivo y fecha YYYY-MM-DD requeridos' });
+  try { res.status(201).json(await Gasto.create(data)); } catch { onError(res); }
+});
+app.param('idgasto', (req, res, next, value) => {
+  if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)) || Number(value) < 1) return res.status(400).json({ error: 'ID invalido' });
+  next();
+});
+app.put('/gasto/:idgasto', async (req, res) => {
+  const data = parseGasto(req.body);
+  if (!data) return res.status(400).json({ error: 'Datos de gasto invalidos' });
+  try {
+    const gasto = await Gasto.findByPk(req.params.idgasto);
+    if (!gasto) return res.status(404).json({ error: 'Gasto no encontrado' });
+    res.json(await gasto.update(data));
+  } catch { onError(res); }
+});
+app.delete('/gasto/:idgasto', async (req, res) => {
+  try {
+    const deleted = await Gasto.destroy({ where: { idgasto: req.params.idgasto } });
+    if (!deleted) return res.status(404).json({ error: 'Gasto no encontrado' });
+    res.status(204).end();
+  } catch { onError(res); }
+});
+if (require.main === module) {
+  sequelize.authenticate().then(() => {
+    app.listen(Number(process.env.PORT || 5000), () => console.log('API de gastos lista'));
+  }).catch(() => { console.error('No se pudo conectar a MySQL. Revisa la configuracion.'); process.exitCode = 1; });
+}
+module.exports = app;

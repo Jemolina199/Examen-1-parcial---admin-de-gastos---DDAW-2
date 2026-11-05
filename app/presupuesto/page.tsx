@@ -9,6 +9,7 @@ export default function Presupuesto() {
     const router = useRouter();
 
     const guardar = () => {
+        if (!Number.isFinite(monto) || monto <= 0) return;
         guardarPresupuesto(monto);
         router.push("/gastos");
     };
@@ -16,11 +17,11 @@ export default function Presupuesto() {
     return (
         <div style={{padding: '20px', maxWidth: '400px', margin: 'auto'}}>
             <h1>Establecer Presupuesto Mensual</h1>
-            <input 
-                type="number" 
+            <input
+                type="number" min="0.01" step="0.01" aria-label="Presupuesto mensual"
                 placeholder="Monto de presupuesto Mensual"
                 style={{border: '1px solid gray', padding: '8px', width: '100%', marginBottom: '10px'}}
-                onChange={e => setMonto(Number(e.target.value))} 
+                onChange={e => setMonto(Number(e.target.value))}
             />
             <button onClick={guardar} style={{background: 'blue', color: 'white', padding: '8px 16px'}}>
                 Guardar Presupuesto
